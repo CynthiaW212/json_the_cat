@@ -1,27 +1,30 @@
-const request = require('request');
-const breedName = process.argv[2];
-if (!breedName) {
-  console.log('Please input the breed name you are searching for.');
-  process.exit(1);
-}
+//breedFetcher.js
 
-const url = `https://api.thecatapi.com/v1/breeds/search?q=${breedName}`;
-
-request(url, (err,response,body)=>{
-  if (err) { //Invalid URL, exit
-    console.error(`Invalid URL: ${url}`);
-    process.exit(1);
+const fetchBreedDescription = function(breedName, callback) {
+  const request = require('request');
+  const url = `https://api.thecatapi.com/v1/breeds/search?q=${breedName}`;
+  if (!breedName) {
+    callback(new Error(`Please input the breed name you are searching for.`));
   }
+  request(url, (err,response,body)=>{
+    if (err) { //Invalid URL, return error
+      callback(new Error(`Invalid URL: ${url}`));
+    }
+  
+    const data = JSON.parse(body);
+    if (data.length > 0) {
+      data.forEach(element => {
+        callback(null, element.description);
+      });
+    } else { //if not found
+      callback(new Error(`breed name ${breedName} not found`));
+    }
+ 
+  });
 
-  const data = JSON.parse(body);
-  if (data.length > 0) {
-    data.forEach(element => {
-      console.log(`${element.name}: `);
-      console.log(element.description);
-    });
-  } else { //if not found
-    console.log(`breed name ${breedName} not found`);
-  }
 
 
-});
+};
+
+
+module.exports = { fetchBreedDescription };
